@@ -1,4 +1,4 @@
-# richtexteditorvue
+# 移动端富文本编辑器，支持谷歌，火狐，ie9以上
 
 ## Project setup
 ```
