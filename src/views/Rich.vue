@@ -1,6 +1,7 @@
 <template>
     <div>
-        <Rich-Text ref="RichText"></Rich-Text>
+        
+        <Rich-Text ref="RichText" ></Rich-Text>
         <el-row>
             <el-col style="text-align:center;margin-top:10px;">
                 <el-button type="primary" @click="getInnerHTML"> 获取内容 </el-button>
@@ -37,5 +38,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
- 
+    .clearFix::after{
+        clear: both;
+    }
  </style> 

@@ -1,13 +1,14 @@
 <template>
-    <div>
-        <div style="margin-bottom:10px;">
-             <el-button @click="pushContent('LINK')"> 插入链接 </el-button>
-            <el-button @click="pushContent('IMG')"> 插入图片 </el-button>
-            <el-button @click="pushContent('VIDEO')"> 插入视频 </el-button>
-             <el-button @click="fullScreen"> 全屏 </el-button>
-             <el-button @click="exitScreen"> 退出全屏 </el-button>
+    <div ref="richTextP">
+        <div style="margin-top:10px;text-align:left;margin-left:10px;">
+            <el-button size="mini" @click="pushContent('LINK')"> 插入链接 </el-button>
+            <el-button size="mini" @click="pushContent('IMG')"> 插入图片 </el-button>
+            <el-button size="mini" @click="pushContent('VIDEO')"> 插入视频 </el-button>
+            <el-button size="mini" @click="exitScreen" v-if="isfullScreen"> 退出全屏 </el-button>
+            <el-button size="mini" @click="fullScreen" v-else> 全屏 </el-button>
+            
         </div>
-        <div id="richText" ref="richText">
+        <div class="richText" ref="richText">
             
         </div>
         <el-dialog
@@ -37,7 +38,7 @@ import Link  from './Link';
 import IMG  from './Img';
 import VIDEO  from './Video';
 import iframeStyle from './style';
-import { getIframeElement ,setPoint ,pushContent,updataContent ,fullScreen,getIframeWindow,exitScreen} from './utils'
+import { getIframeElement ,setPoint ,pushContent,updataContent,getIframeWindow} from './utils'
 export default {
     name:'Rich',
     components:{
@@ -63,7 +64,8 @@ export default {
             settingView:'',
             iframeId: 'richTextIframe' + new Date().getTime(),
             thisIframe:'',
-            thisDom:''
+            thisDom:'',
+            isfullScreen:false
         }
     },
     created(){
@@ -81,29 +83,23 @@ export default {
     methods:{
         createIframe(){
             let iframe = document.createElement('iframe');
-            iframe.setAttribute('style','border:none;width:100%;height:100%;');
-            iframe.setAttribute('id',this.iframeId);
-
-            this.$refs.richText.appendChild(iframe);
+                iframe.setAttribute('style','border:none;width:100%;height:300px;margin:0;padding:0;');
+                iframe.setAttribute('id',this.iframeId);
+                this.$refs.richText.appendChild(iframe);
             let head = iframe.contentWindow.document.querySelector('head');
             let body = iframe.contentWindow.document.querySelector('body');
             let p = document.createElement('p');
                 p.innerHTML = '&#8203;'
                 body.appendChild(p);
-            iframe.contentWindow.document.querySelector('body').setAttribute('contenteditable','true');
+                body.setAttribute('contenteditable','true');
+                body.setAttribute('style','border:1px solid #ccc');
             let meta = document.createElement('meta');
-            meta.setAttribute('charset','UTF-8');
-            head.appendChild(meta);
+                meta.setAttribute('charset','UTF-8');
+                head.appendChild(meta);
             let style = document.createElement('style');
-            style.innerHTML = iframeStyle
-            head.appendChild(style);
-            getIframeWindow(this.iframeId).fullScreen = fullScreen
+                style.innerHTML = iframeStyle
+                head.appendChild(style);
             setPoint(getIframeElement(this.iframeId))
-        },
-        getRichText(){
-            //获取富文本元素
-            let richText = this.$refs.iframe.contentWindow.richText;
-            return richText;
         },
         pushContent(type){
             this.isEdit = false;
@@ -124,15 +120,18 @@ export default {
         },
         updateContent(t){
             console.log(t);
-            let type = t.target.nodeName;
+           
             this.form = JSON.parse(t.target.dataset.option);
+            let type = this.form.type;
             if(type === 'LINK'){
                 this.settingView = Link;
                 this.title = '修改链接';
             }else if(type === 'IMG'){
+                 this.settingView = IMG;
                 this.title = '修改图片';
             }else if(type === 'VIDEO'){
                 this.title = '修改视频';
+                this.settingView = VIDEO;
             }
             this.isEdit = true;
             this.thisDom = t.target
@@ -141,6 +140,7 @@ export default {
         cancel(){
             this.customerLinkDialogVisble = false;
             this.isEdit = false;
+            this.settingView = null;
         },
         save(){
             let data = this.$refs.settingPanel.getData();
@@ -156,20 +156,36 @@ export default {
             return getIframeElement(this.iframeId).querySelector('body').innerHTML
         },
         fullScreen(){
-            fullScreen();
+            let richText = this.$refs.richTextP;
+
+                richText.className = 'fullScreen'
+                this.isfullScreen  = true;
+                getIframeElement(this.iframeId).querySelector('body').style.height = '100%'
         },
         exitScreen(){
-            exitScreen()
+            let richText = this.$refs.richTextP;
+
+                richText.className = '';
+                this.isfullScreen  = false;
+                
         }
     }
 }
 </script>
 <style lang="scss" scoped>
-    #richText{
-       width:50% ;
-       height:500px ;
-       border: 1px solid #ccc ;
-       margin: 20px ;
+    .richText{
+       width:100% ;
+    //    height:400px ;
+    //    margin: 20px ;
        margin: 0 auto;
+    }
+    .fullScreen{
+        position: fixed;
+        top:0;
+        left: 0;
+        background: #fff;
+        z-index: 9999;
+        width: 100%;
+        height: 100%;
     }
  </style> 
